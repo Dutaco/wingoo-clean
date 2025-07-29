@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% set show_nav = true %}
+
+{% block title %}Travel Match - Wingoo{% endblock %}
+
+{% block content %}
+<div class="page-content pt-4 pb-3">
+    <div class="card card-style mb-3">
+        <div class="content">
+            <h4 class="text-center mb-3">
+                <i class="fas fa-plane color-blue-dark me-2"></i>Flight Matching
+            </h4>
+            <form method="POST" action="{{ url_for('routes.flights') }}">
+                <div class="mb-3">
+                    <label for="flight_number" class="form-label">Flight Number</label>
+                    <input type="text" class="form-control" id="flight_number" name="flight_number" required>
+                </div>
+                <div class="mb-3">
+                    <label for="departure" class="form-label">Departure</label>
+                    <input type="text" class="form-control" id="departure" name="departure" required>
+                </div>
+                <div class="mb-3">
+                    <label for="arrival" class="form-label">Arrival</label>
+                    <input type="text" class="form-control" id="arrival" name="arrival" required>
+                </div>
+                <div class="mb-3">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="date" name="date" required>
+                </div>
+                <div class="mb-3">
+                    <label for="seat_preference" class="form-label">Seat Preference</label>
+                    <input type="text" class="form-control" id="seat_preference" name="seat_preference" placeholder="Optional">
+                </div>
+                <button type="submit" class="btn btn-sm btn-full bg-blue-dark text-uppercase font-700">
+                    <i class="fas fa-paper-plane me-2"></i>Submit Flight
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% if matches %}
+    <div class="card card-style">
+        <div class="content">
+            {% if matches|length > 0 %}
+            <div class="alert alert-success d-flex align-items-center mb-3" role="alert">
+                <i class="fas fa-users me-2"></i>
+                <div>🎉 You have {{ matches|length }} travel match{{ matches|length > 1 and 'es' or '' }} on this flight!</div>
+            </div>
+            {% endif %}
+            <h5 class="mb-3 color-green-dark">Matched Travelers on This Flight</h5>
+            {% for match in matches %}
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="mb-1"><i class="fas fa-user me-2"></i>{{ match.display_name }}</h6>
+                    <p class="mb-0 text-muted">Shared Interests:</p>
+                    <div class="d-flex flex-wrap gap-2 mt-1">
+                        {% for interest in match.shared_interests %}
+                            <span class="badge bg-highlight px-3 py-2 rounded-pill">
+                                <i class="fas fa-tag me-1"></i>{{ interest }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+            {% if matches|length == 0 %}
+                <p class="text-muted">No matches found yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

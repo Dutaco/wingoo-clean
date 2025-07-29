@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shared Interests</title>
+    <script>
+        function updateLocationAndCheckZone() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    // Prvo pošalji koordinate na backend za čuvanje
+                    fetch("/update_location", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ lat: lat, lon: lon })
+                    });
+
+                    // Provjeri da li je korisnik unutar zone
+                    fetch("/check_zone", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ lat: lat, lon: lon })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.inside_zone) {
+                            document.getElementById("waiterSection").style.display = "block";
+                        } else {
+                            document.getElementById("waiterSection").style.display = "none";
+                        }
+                    });
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function callWaiter() {
+            fetch("/call_waiter", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ zone_name: "Test Zona Podgorica" }) // mora odgovarati nazivu iz baze
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            });
+        }
+
+        window.onload = function() {
+            updateLocationAndCheckZone();
+        }
+    </script>
+</head>
+<body>
+    <h1>Shared Interests</h1>
+    <label>
+        <input type="checkbox" onchange="updateLocationAndCheckZone()"> I'm inside a Sport Club
+    </label>
+
+    <div id="waiterSection" style="display:none; margin-top:20px;">
+        <button onclick="callWaiter()">📞 Call a Waiter</button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Digital Gifts - Wingoo{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">Digital Gifts</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sendGiftModal">
+                    <i class="fas fa-plus me-2"></i>Send Gift
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gift Stats -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="gift-stat-icon bg-primary bg-opacity-10 rounded-circle mx-auto mb-3">
+                        <i class="fas fa-paper-plane text-primary fs-2"></i>
+                    </div>
+                    <h3 class="h4 mb-1">{{ gifts.sent|length }}</h3>
+                    <p class="text-muted mb-0">Gifts Sent</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="gift-stat-icon bg-success bg-opacity-10 rounded-circle mx-auto mb-3">
+                        <i class="fas fa-inbox text-success fs-2"></i>
+                    </div>
+                    <h3 class="h4 mb-1">{{ gifts.received|length }}</h3>
+                    <p class="text-muted mb-0">Gifts Received</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="gift-stat-icon bg-warning bg-opacity-10 rounded-circle mx-auto mb-3">
+                        <i class="fas fa-heart text-warning fs-2"></i>
+                    </div>
+                    <h3 class="h4 mb-1">{{ (gifts.sent|length + gifts.received|length) }}</h3>
+                    <p class="text-muted mb-0">Total Gifts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gift Tabs -->
+    <ul class="nav nav-pills nav-justified mb-4" id="giftTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="sent-tab" data-bs-toggle="pill" 
+                    data-bs-target="#sent" type="button" role="tab">
+                <i class="fas fa-paper-plane me-2"></i>Sent Gifts
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="received-tab" data-bs-toggle="pill" 
+                    data-bs-target="#received" type="button" role="tab">
+                <i class="fas fa-inbox me-2"></i>Received Gifts
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="giftTabsContent">
+        <!-- Sent Gifts -->
+        <div class="tab-pane fade show active" id="sent" role="tabpanel">
+            {% if gifts.sent %}
+                <div class="row g-4">
+                    {% for gift in gifts.sent %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card border-0 shadow-sm gift-card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="gift-type-icon bg-primary bg-opacity-10 rounded-circle me-3">
+                                        <i class="fas fa-gift text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">{{ gift.gift_type.title() }}</h6>
+                                        <small class="text-muted">
+                                            {{ gift.created_at }}
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                {% if gift.message %}
+                                <p class="text-muted small mb-3">"{{ gift.message }}"</p>
+                                {% endif %}
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-{{ 'success' if gift.redeemed else 'secondary' }}">
+                                        {{ 'Redeemed' if gift.redeemed else 'Pending' }}
+                                    </span>
+                                    
+                                    {% if gift.qr_code %}
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="showQRCode('{{ gift.qr_code }}', '{{ gift.gift_type }}')">
+                                        <i class="fas fa-qrcode me-1"></i>QR Code
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-gift text-muted fs-1 mb-3"></i>
+                    <h5 class="text-muted">No gifts sent yet</h5>
+                    <p class="text-muted">Start spreading joy by sending your first digital gift!</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sendGiftModal">
+                        Send Your First Gift
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Received Gifts -->
+        <div class="tab-pane fade" id="received" role="tabpanel">
+            {% if gifts.received %}
+                <div class="row g-4">
+                    {% for gift in gifts.received %}
+                    <div class="card border-0 shadow-sm gift-card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="gift-type-icon bg-success bg-opacity-10 rounded-circle me-3">
+                                    <i class="fas fa-{{ get_gift_icon(gift.gift_type) }} text-success"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{{ gift.gift_type.title() }}</h6>
+                                    <small class="text-muted">
+                                        From: {{ get_user_name(gift.sender_uid) }}
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            {% if gift.message %}
+                            <p class="text-muted small mb-3">"{{ gift.message }}"</p>
+                            {% endif %}
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    {{ gift.created_at.strftime('%B %d, %Y') }}
+                                </small>
+                                
+                                {% if not gift.redeemed %}
+                                <button class="btn btn-sm btn-success" onclick="redeemGift('{{ gift.id }}')">
+                                    <i class="fas fa-check me-1"></i>Redeem
+                                </button>
+                                {% else %}
+                                <span class="badge bg-success">Redeemed</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox text-muted fs-1 mb-3"></i>
+                    <h5 class="text-muted">No gifts received yet</h5>
+                    <p class="text-muted">When someone sends you a gift, it will appear here!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Send Gift Modal -->
+<div class="modal fade" id="sendGiftModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-gift me-2"></i>Send Digital Gift
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="recipient_email" class="form-label">Recipient Email</label>
+                        <input type="email" class="form-control" name="recipient_email" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="gift_type" class="form-label">Gift Type</label>
+                        <select class="form-select" name="gift_type" required>
+                            <option value="">Select a gift...</option>
+                            <option value="coffee">☕ Coffee</option>
+                            <option value="song">🎵 Song</option>
+                            <option value="drink">🍹 Drink</option>
+                            <option value="flower">🌸 Flower</option>
+                            <option value="book">📚 Book</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Personal Message (Optional)</label>
+                        <textarea class="form-control" name="message" rows="3" 
+                                  placeholder="Add a personal message..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Send Gift
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrCodeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-qrcode me-2"></i>Gift QR Code
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrCodeContainer"></div>
+                <p class="text-muted mt-3">Share this QR code with the recipient to redeem their gift</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/gifts.js') }}"></script>
+{% endblock %}

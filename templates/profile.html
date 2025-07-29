@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set show_nav = true %}
+
+{% block title %}My Profile - Wingoo{% endblock %}
+
+{% block content %}
+<div class="page-content pb-3 pt-4">
+    <div class="card card-style">
+        <div class="d-flex content mb-3">
+            <!-- Left side: User info -->
+            <div class="flex-grow-1">
+                <h2 class="fw-bold">{{ current_user.display_name }}
+                    {% if current_user.is_verified %}
+                        <i class="fa fa-check-circle color-blue-dark ms-2"></i>
+                    {% endif %}
+                </h2>
+                <p class="mb-1 small">
+                    <i class="fa fa-map-marker me-2"></i>{{ current_user.location or "Unknown location" }}
+                </p>
+                <p class="text-muted small">
+                    {{ current_user.bio or "Welcome to your Wingoo profile!" }}
+                </p>
+                <div class="mt-3">
+                    <span class="badge bg-primary me-2">{{ current_user.followers_count or 0 }} Followers</span>
+                    <span class="badge bg-secondary">{{ current_user.following_count or 0 }} Following</span>
+                </div>
+            </div>
+            <!-- Right side: Profile image -->
+            <img src="{{ url_for('static', filename='images/profile.png') }}" alt="Profile" class="rounded-circle shadow-xl" width="90" height="90">
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="content">
+            <div class="row text-center">
+                <div class="col-6">
+                    <a href="{{ url_for('routes.edit_interests') }}" class="btn btn-sm btn-full bg-highlight rounded-s text-uppercase font-700">Edit</a>
+                </div>
+                <div class="col-6">
+                    <a href="#" class="btn btn-sm btn-full border-highlight color-highlight rounded-s text-uppercase font-700">Message</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-style">
+        <div class="content">
+            <h5 class="mb-3"><i class="fa fa-star color-yellow-dark me-2"></i>Your Interests</h5>
+            {% if interests %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for interest in interests %}
+                        <span class="badge bg-highlight px-3 py-2 rounded-pill">
+                            <i class="fa fa-tag me-1"></i>{{ interest.strip() }}
+                        </span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted small">No interests selected yet.</p>
+                <a href="{{ url_for('routes.edit_interests') }}" class="btn btn-sm btn-border mt-2">Add Interests</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

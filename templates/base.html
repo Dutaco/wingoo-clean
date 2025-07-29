@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Wingoo - Connect Through Shared Interests{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <!-- Sticky Theme CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fonts/css/fontawesome-all.min.css') }}">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Source+Sans+Pro:300,400,600,700&display=swap" rel="stylesheet">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='_manifest.json') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='app/icons/icon-192x192.png') }}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="theme-light" data-highlight="highlight-white" data-gradient="body-default">
+
+    {% if show_nav is not defined or show_nav %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('routes.dashboard') if current_user.is_authenticated else url_for('routes.home') }}">
+                <i class="fas fa-heart me-2"></i>Wingoo
+            </a>
+
+            {% if current_user.is_authenticated and request.endpoint != 'routes.home' %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>Profile
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('routes.profile') }}">My Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('routes.subscription') }}">My Subscription</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('routes.edit_interests') }}">Edit Interests</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('routes.upload_audio') }}">Upload Audio News</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('routes.received_gifts') }}">Received Gifts</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('routes.sent_gifts') }}">Sent Gifts</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('routes.logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item d-flex align-items-center ms-3">
+                        {% if current_user.is_premium %}
+                            <span class="badge bg-warning text-dark fw-semibold">Premium Subscriber</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Free User</span>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/_service-worker.js')
+                .then(reg => console.log("Service Worker registered", reg))
+                .catch(err => console.error("Service Worker registration failed", err));
+        }
+    </script>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show text-center fw-semibold text-{{ 'danger' if category == 'error' else 'success' }} py-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close position-absolute top-0 end-0 mt-2 me-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    {% if show_nav %}
+    <!-- Sticky Footer Navigation -->
+    <div id="footer-bar" class="footer-bar-1">
+        <a href="{{ url_for('routes.dashboard') if current_user.is_authenticated else url_for('routes.home') }}" class="{% if request.endpoint == 'routes.dashboard' or request.endpoint == 'routes.home' %}active-nav{% endif %}"><i class="fa fa-home"></i><span>Home</span></a>
+        <a href="{{ url_for('routes.find_matches') }}" class="{% if request.endpoint == 'routes.find_matches' %}active-nav{% endif %}"><i class="fa fa-users"></i><span>Matches</span></a>
+        <a href="{{ url_for('routes.gifts') }}" class="{% if request.endpoint == 'routes.gifts' %}active-nav{% endif %}"><i class="fa fa-gift"></i><span>Gifts</span></a>
+        <a href="{{ url_for('routes.flights') }}" class="{% if request.endpoint == 'routes.flights' %}active-nav{% endif %}"><i class="fa fa-plane"></i><span>Flights</span></a>
+        <a href="{{ url_for('routes.news') }}" class="{% if request.endpoint == 'routes.news' %}active-nav{% endif %}"><i class="fa fa-newspaper"></i><span>News</span></a>
+    </div>
+    {% endif %}
+
+    <!-- Optional Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="text-muted mb-0">&copy; {{ current_year if current_year is defined else "2025" }} Wingoo. Connect through shared interests.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Wingoo{% endblock %}
+
+{% block content %}
+<!-- PWA Wrapper -->
+<div id="page" class="theme-light" data-highlight="highlight-white" data-gradient="body-default">
+    
+    <!-- Hero Section -->
+    <div class="pt-5 pb-4 px-3 text-center">
+        <h1 class="fw-bold display-6 text-dark">Connect Through Shared Passions</h1>
+        <p class="text-muted">Discover people who share your interests, send digital gifts, 
+        find travel companions, and enjoy personalized news with audio.</p>
+    </div>
+
+    <!-- Feature Highlights -->
+    <div class="row g-3 px-3">
+        <div class="col-6">
+            <div class="bg-white shadow-sm rounded p-3 text-center">
+                <i class="fa fa-heart mb-2 fs-4 text-dark"></i>
+                <h5 class="mb-1">Shared Interests</h5>
+                <p class="text-muted small">Connect with people who love what you love</p>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="bg-white shadow-sm rounded p-3 text-center">
+                <i class="fa fa-gift mb-2 fs-4 text-dark"></i>
+                <h5 class="mb-1">Digital Gifts</h5>
+                <p class="text-muted small">Send coffee, songs, and drinks via QR code</p>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="bg-white shadow-sm rounded p-3 text-center">
+                <i class="fa fa-plane mb-2 fs-4 text-dark"></i>
+                <h5 class="mb-1">Travel Matches</h5>
+                <p class="text-muted small">Find seat neighbors with similar interests</p>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="bg-white shadow-sm rounded p-3 text-center">
+                <i class="fa fa-newspaper mb-2 fs-4 text-dark"></i>
+                <h5 class="mb-1">Audio News</h5>
+                <p class="text-muted small">Personalized news with background music</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Forms -->
+    <div class="mt-5 px-3">
+        <ul class="nav nav-tabs nav-justified mb-3" id="authTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="login-tab" data-bs-toggle="tab" href="#login" role="tab">Login</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="register-tab" data-bs-toggle="tab" href="#register" role="tab">Register</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="authTabsContent">
+            <!-- Login Form -->
+            <div class="tab-pane fade show active" id="login" role="tabpanel">
+                <form action="{{ url_for('routes.login') }}" method="POST">
+                    <input type="email" class="form-control mb-2" name="email" placeholder="Email" required>
+                    <input type="password" class="form-control mb-3" name="password" placeholder="Password" required>
+                    <button type="submit" class="btn btn-dark w-100">Login</button>
+                </form>
+            </div>
+            <!-- Register Form -->
+            <div class="tab-pane fade" id="register" role="tabpanel">
+                <form action="{{ url_for('routes.register') }}" method="POST">
+                    <input type="text" class="form-control mb-2" name="name" placeholder="Name" required>
+                    <input type="email" class="form-control mb-2" name="email" placeholder="Email" required>
+                    <input type="password" class="form-control mb-2" name="password" placeholder="Password" required>
+                    <input type="password" class="form-control mb-3" name="confirm_password" placeholder="Confirm Password" required>
+                    <button type="submit" class="btn btn-dark w-100">Register</button>
+                </form>
+                {% if register_error %}
+                <div class="alert alert-danger mt-3 text-center">
+                    {{ register_error }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script type="module">
+    window.firebaseConfig = {
+        apiKey: "{{ firebase_api_key }}",
+        authDomain: "{{ firebase_project_id }}.firebaseapp.com",
+        projectId: "{{ firebase_project_id }}",
+        storageBucket: "{{ firebase_project_id }}.firebasestorage.app",
+        appId: "{{ firebase_app_id }}"
+    };
+</script>
+<script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}
+

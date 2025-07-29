@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% set show_nav = true %}
+
+{% block title %}Dashboard - Wingoo{% endblock %}
+
+{% block content %}
+<div class="page-content pb-2">
+    <div class="content mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h1 class="mb-0 fs-5">Welcome, {{ user.display_name }}!</h1>
+            <div class="text-muted small">
+                <i class="fa fa-calendar me-1"></i>
+                <span id="currentDate"></span>
+            </div>
+        </div>
+
+        <!-- Quick Actions Single Column -->
+        <div class="row text-center">
+            {% for card in [
+                ('Send Gifts', 'fa-gift', 'Share digital gifts with QR codes', 'routes.send_gift_form', 'Get Started'),
+                ('Matches', 'fa-users', 'Find users with shared passions', 'routes.find_matches', 'Explore'),
+                ('Flights', 'fa-plane', 'Find travel companions', 'routes.flights', 'Book Now'),
+                ('News', 'fa-newspaper', 'Curated news with audio', 'routes.news', 'Listen'),
+                ('My Interests', 'fa-heart', 'Update your passions', 'routes.edit_interests', 'Edit')
+            ] %}
+            <div class="col-12 mb-3">
+                <div class="card card-style">
+                    <div class="content py-2 px-3">
+                        <i class="fa {{ card[1] }} color-highlight fa-lg mb-1"></i>
+                        <h6 class="mb-1">{{ card[0] }}</h6>
+                        <p class="opacity-60 small mb-2">{{ card[2] }}</p>
+                        <a href="{{ url_for(card[3]) }}" class="btn btn-xs btn-full btn-border">{{ card[4] }}</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Interests Section -->
+        <div class="card card-style">
+            <div class="content py-3 px-3">
+                <h6 class="mb-2">
+                    <i class="fa fa-star color-yellow-dark me-2"></i>Your Interests
+                </h6>
+                {% if interests %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for interest in interests %}
+                            <span class="badge bg-highlight px-3 py-2 rounded-pill">
+                                <i class="fa fa-tag me-1"></i>{{ interest.strip() }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fa fa-heart opacity-30 fa-lg mb-2"></i>
+                        <p class="opacity-60">No interests selected yet.</p>
+                        <a href="{{ url_for('routes.interests') }}" class="btn btn-xs btn-full btn-border">Select Interests</a>
+                    </div>
+                {% endif %}
+            </div>
+            <div id="dynamic-zones" class="px-3 pb-3"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Waiter Alert Messages -->
+<div id="waiter-alert-success" class="bg-success-light text-success d-none" role="alert">
+    <i class="fas fa-check-circle"></i>
+    <span id="success-message">Waiter has been notified!</span>
+    <a href="#" class="ms-auto text-success" onclick="this.parentElement.classList.add('d-none')">
+        <i class="fa fa-times"></i>
+    </a>
+</div>
+
+
+<div id="waiter-alert-error" class="alert alert-danger alert-dismissible fade show d-none mx-3 mt-3" role="alert">
+    <i class="fas fa-exclamation-circle me-2"></i> <span id="error-message">Something went wrong.</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    document.querySelectorAll('.hover-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+</script>
+
+<script>
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371e3;
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) ** 2 +
+              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+function toggleWaiterButton(zoneId) {
+    const chk = document.getElementById(`chk-${zoneId}`);
+    const btn = document.getElementById(`btn-${zoneId}`);
+    btn.style.display = chk.checked ? "block" : "none";
+}
+
+function callWaiter(zoneName) {
+    fetch("/call_waiter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ zone_name: zoneName })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            document.getElementById("success-message").innerText = data.message || "Waiter has been notified!";
+            const successBox = document.getElementById("waiter-alert-success");
+            successBox.classList.remove("d-none");
+            successBox.classList.add("show");
+
+            setTimeout(() => {
+                successBox.classList.remove("show");
+                successBox.classList.add("d-none");
+            }, 4000);
+        } else {
+            document.getElementById("error-message").innerText = data.message || "Something went wrong.";
+            const errorBox = document.getElementById("waiter-alert-error");
+            errorBox.classList.remove("d-none");
+            errorBox.classList.add("show");
+
+            setTimeout(() => {
+                errorBox.classList.remove("show");
+                errorBox.classList.add("d-none");
+            }, 5000);
+        }
+    })
+    .catch(err => {
+        document.getElementById("error-message").innerText = "Network error occurred.";
+        const errorBox = document.getElementById("waiter-alert-error");
+        errorBox.classList.remove("d-none");
+        errorBox.classList.add("show");
+
+        setTimeout(() => {
+            errorBox.classList.remove("show");
+            errorBox.classList.add("d-none");
+        }, 5000);
+    });
+}
+
+
+function checkUserZones() {
+    navigator.geolocation.getCurrentPosition(pos => {
+        fetch("/check_zone", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById("dynamic-zones");
+            container.innerHTML = "";
+
+            (data.zones || []).forEach(zone => {
+                const zoneId = zone.zone_name.replace(/\s/g, "");
+                container.innerHTML += `
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="chk-${zoneId}" onchange="toggleWaiterButton('${zoneId}')">
+                        <label class="form-check-label" for="chk-${zoneId}">
+                            I'm inside <strong>${zone.zone_name}</strong>
+                        </label>
+                        <div id="btn-${zoneId}" class="mt-2" style="display:none;">
+                            <button class="btn btn-sm btn-outline-info" onclick="callWaiter('${zone.zone_name}')">
+                                <i class="fas fa-bell"></i> Call a Waiter
+                            </button>
+                        </div>
+                    </div>`;
+            });
+        });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", checkUserZones);
+</script>
+
+{% endblock %}

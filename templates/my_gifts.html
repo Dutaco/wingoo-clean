@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Gifts</title>
+</head>
+<body>
+    <h1>🎁 My Gifts</h1>
+    {% for gift in gifts %}
+        <div style="margin-bottom:20px;">
+            <strong>From:</strong> {{ gift.sender.display_name }}<br>
+            <strong>Type:</strong> {{ gift.gift_type }}<br>
+            <strong>Message:</strong> {{ gift.message }}<br>
+            <strong>Received at:</strong> {{ gift.created_at }}<br>
+            {% if gift.redeemed %}
+                <span style="color:green;">Redeemed ✅</span>
+            {% else %}
+                <span style="color:orange;">Not Redeemed</span>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No gifts received yet.</p>
+    {% endfor %}
+</body>
+</html>

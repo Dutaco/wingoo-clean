@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Send Gift</title>
+</head>
+<body>
+ <h2>🎁 Send a Gift</h2>
+
+<form method="POST" action="{{ url_for('routes.send_gift') }}">
+  <label for="recipient_id">Select recipient:</label><br>
+  <select name="recipient_id" id="recipient_id">
+    {% for user in users %}
+      <option value="{{ user.id }}">{{ user.display_name }}</option>
+    {% endfor %}
+  </select><br><br>
+
+  <label for="gift_type">Gift type:</label><br>
+  <select name="gift_type" id="gift_type">
+    <option value="Coffee">☕ Coffee</option>
+    <option value="Drink">🍸 Drink</option>
+    <option value="Snack">🍪 Snack</option>
+    <option value="Hug">🤗 Hug</option>
+  </select><br><br>
+
+  <label for="message">Message (optional):</label><br>
+  <textarea name="message" id="message" rows="3" cols="30"></textarea><br><br>
+
+  <button type="submit">🎁 Send Gift</button>
+</form>

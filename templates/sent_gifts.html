@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% set show_nav = true %}
+
+{% block title %}Sent Gifts - Wingoo{% endblock %}
+
+{% block content %}
+<div class="page-content pt-4 pb-3">
+    <div class="card card-style">
+        <div class="content">
+            <h4 class="text-center mb-4">
+                <i class="fas fa-paper-plane color-blue-dark me-2"></i>Gifts You've Sent
+            </h4>
+
+            {% if gifts %}
+                <div class="row">
+                    {% for gift in gifts %}
+                        <div class="col-12 mb-3">
+                            <div class="card card-style mb-2">
+                                <div class="content py-2">
+                                    <h5 class="mb-1">
+                                        <i class="fas fa-user color-green-dark me-2"></i>
+                                        To: {{ gift.recipient.display_name }}
+                                    </h5>
+                                    <p class="mb-1">
+                                        <i class="fas fa-gift color-highlight me-2"></i>
+                                        Gift Type: <strong>{{ gift.gift_type }}</strong>
+                                    </p>
+                                    {% if gift.message %}
+                                        <p class="mb-1">
+                                            <i class="fas fa-comment-dots color-gray-dark me-2"></i>
+                                            "{{ gift.message }}"
+                                        </p>
+                                    {% endif %}
+                                    <p class="small text-muted">
+                                        <i class="fas fa-clock me-2"></i>Sent on {{ gift.created_at.strftime('%B %d, %Y %H:%M') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>You haven't sent any gifts yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
