@@ -6,3 +6,4 @@ wtforms
 python-dotenv
 gunicorn
 pymysql
+geopy==2.4.1
