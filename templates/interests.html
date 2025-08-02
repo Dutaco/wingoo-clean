@@ -10,7 +10,7 @@
             <h4 class="mb-3 text-center">
                 <i class="fas fa-heart color-red-dark me-2"></i>Edit Your Interests
             </h4>
-            <form method="POST" action="{{ url_for('routes.edit_interests') }}">
+            <form method="POST">
                 <div class="row">
                     {% for interest in interests %}
                         <div class="col-6 mb-3">

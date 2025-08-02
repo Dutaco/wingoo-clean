@@ -96,7 +96,7 @@ def register():
 
     login_user(new_user)
     flash("Welcome! Your account was created successfully.", "success")
-    return redirect(url_for("routes.dashboard"))
+    return redirect(url_for('routes.edit_interests'))
 
 
 @bp.route('/login', methods=['GET', 'POST'])
