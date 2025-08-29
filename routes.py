@@ -609,6 +609,23 @@ def subscription():
 
     return render_template("subscription.html", subscription=subscription)
 
+@bp.route('/api/set_location', methods=['POST'])
+@login_required
+def set_location():
+    data = request.get_json(silent=True) or {}
+    lat = data.get('lat')
+    lon = data.get('lon')
+    if lat is None or lon is None:
+        return {"ok": False, "error": "Missing lat/lon"}, 400
+    try:
+        current_user.latitude = float(lat)
+        current_user.longitude = float(lon)
+        db.session.commit()
+        return {"ok": True}
+    except Exception as e:
+        db.session.rollback()
+        return {"ok": False, "error": str(e)}, 500
+
 @bp.route('/upgrade')
 @login_required
 def upgrade():

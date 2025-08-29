@@ -99,6 +99,27 @@
         });
     });
 </script>
+<script>
+(function() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      fetch("{{ url_for('routes.set_location') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude
+        })
+      }).catch(console.warn);
+    },
+    (err) => {
+      console.warn('Geolocation (login/update) denied or failed:', err);
+    },
+    { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+  );
+})();
+</script>
 
 <script>
 function getDistance(lat1, lon1, lat2, lon2) {
@@ -161,6 +182,7 @@ function callWaiter(zoneName) {
         }, 5000);
     });
 }
+
 
 
 function checkUserZones() {
