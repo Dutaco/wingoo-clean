@@ -441,56 +441,71 @@ def send_gift_to(recipient_id):
 @bp.route('/news')
 @login_required
 def news():
+    # monthly-limit guard
     reset_limits_if_needed(current_user)
-
     if not current_user.is_premium and current_user.news_count >= 3:
-        flash("Free users can only access 3 news items per month. Upgrade to Premium for unlimited access.", "warning")
+        flash("Free users can access 3 news items per month. Upgrade to Premium for unlimited access.", "warning")
         return redirect(url_for('routes.dashboard'))
 
+    # read interests
     try:
         interests = json.loads(current_user.interests) if current_user.interests else []
-    except:
+    except Exception:
         interests = []
 
+    # make sure the audio folder exists
     audio_dir = Path("static/audio")
     audio_dir.mkdir(parents=True, exist_ok=True)
 
     news_items = []
+    topics = interests[:3] or ["Technology"]  # fallback topic if none selected
 
-    for interest in interests[:3]:  # max 3
-        prompt = f"Write a short, engaging news summary (3-4 sentences) about recent updates in {interest.lower()}."
+    for interest in topics:
+        prompt = (
+            f"Write a concise, upbeat news brief (3–4 sentences) about recent updates in {interest.lower()}."
+            " Keep it non-technical, suitable for a general audience."
+        )
 
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+            # OpenAI v1 syntax
+            rsp = client.chat.completions.create(
+                model="gpt-3.5-turbo",  # or 'gpt-4o-mini' if enabled on your key
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=150,
-                temperature=0.7
+                max_tokens=180,
+                temperature=0.7,
+                timeout=30,
             )
-            summary = response.choices[0].message.content.strip()
+            summary = rsp.choices[0].message.content.strip()
 
-            filename = f"{interest.lower()}_{datetime.utcnow().timestamp():.0f}.mp3"
+            # TTS to mp3
+            filename = f"{interest.lower()}_{int(datetime.utcnow().timestamp())}.mp3"
             filepath = audio_dir / filename
             gTTS(summary).save(filepath.as_posix())
 
             news_items.append({
                 "title": f"{interest} Highlights",
                 "summary": summary,
-                "audio_url": f"/static/audio/{filename}"
+                "audio_url": f"/static/audio/{filename}",
             })
 
         except Exception as e:
+            # Friendly fallback if quota/model/network issues
+            fallback = (
+                "We couldn’t fetch AI-generated news right now. "
+                "Please try again later or check your API key/quota."
+            )
             news_items.append({
                 "title": f"{interest} Highlights",
-                "summary": f"Error generating news: {e}",
-                "audio_url": ""
+                "summary": f"{fallback}\n\nDetails: {e}",
+                "audio_url": "",
             })
 
-    current_user.news_count += 1
+    # count this usage (count the number of briefs we actually produced/attempted)
+    produced = len(news_items)
+    current_user.news_count = (current_user.news_count or 0) + produced
     db.session.commit()
 
     return render_template("news.html", news_items=news_items)
-
 
 @bp.route('/upload_audio', methods=['GET', 'POST'])
 @login_required
